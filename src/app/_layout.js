@@ -35,8 +35,16 @@ export default function RootLayout() {
     <PaperProvider theme={paperTheme}>
       <ThemeProvider value={paperTheme}>
         <Stack>
-          <Stack.Screen name="myRecepiesPage" options={{ title: "My Recepies" }} />
-          <Stack.Screen name="pickPage" options={{ title: "Pick ingrediances" }} />
+          <Stack.Screen
+            name="myRecepiesPage"
+            options={{ title: "My Recepies" }}
+            initialParams={colorScheme}
+          />
+          <Stack.Screen
+            name="pickPage"
+            options={{ title: "Pick ingrediances" }}
+            initialParams={colorScheme}
+          />
           <Stack.Screen
             name="(tabs)"
             options={{

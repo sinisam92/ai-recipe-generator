@@ -25,6 +25,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    margin: "auto",
   },
   card: {
     width: "95%",
@@ -33,7 +34,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 10,
     marginVertical: 10,
-    elevation: 5, // Android shadow
+    elevation: 10, // Android shadow
     shadowColor: "#000", // iOS shadow color
     shadowOffset: { width: 0, height: 4 }, // iOS shadow position
     shadowOpacity: 0.1, // iOS shadow opacity

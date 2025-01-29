@@ -1194,6 +1194,7 @@ export const ingredients = {
       ],
     },
     extracts: {
+      name: "extracts",
       image:
         "https://images.unsplash.com/photo-1615484477778-ca3b77940c25?w=500&auto=format&fit=crop&q=60",
       items: [
