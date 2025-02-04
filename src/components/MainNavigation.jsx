@@ -1,6 +1,5 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import SearchBar from "./SearchBar";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -14,7 +13,6 @@ const MainNavigation = ({ colorScheme }) => {
         style={styles.icon}
         onPress={() => router.back()}
       />
-      <SearchBar style={styles.searchBar} />
       <Feather
         name="menu"
         size={24}

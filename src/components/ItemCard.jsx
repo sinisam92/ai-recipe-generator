@@ -1,16 +1,55 @@
 import React from "react";
 import { Card } from "react-native-paper";
-import { Text, StyleSheet, View } from "react-native";
+import { Text, StyleSheet, View, TouchableOpacity } from "react-native";
 
-const ItemCard = ({ item, ingredients }) => {
+const ItemCard = ({
+  item,
+  setSelectedItems,
+  disableOnPress,
+  setSelectedForDelete,
+  selectedForDelete,
+  disableLongPress,
+}) => {
+  const handlePress = () => {
+    if (!disableOnPress) {
+      setSelectedItems((prev) => {
+        const isExist = prev.find((prevItem) => prevItem.name === item.name);
+        if (isExist) {
+          return prev.filter((prevItem) => prevItem.name !== item.name);
+        } else {
+          return [...prev, item];
+        }
+      });
+    }
+  };
+
+  const handleLongPress = () => {
+    if (disableLongPress) return;
+    setSelectedForDelete((prev) => {
+      if (prev.includes(item.name)) {
+        return prev.filter((i) => i !== item.name);
+      } else {
+        return [...prev, item.name];
+      }
+    });
+  };
+
+  const isSelected = selectedForDelete?.includes(item.name);
+
   return (
     <View style={styles.cardWrapper}>
-      <Card style={styles.card}>
-        <Card.Cover source={{ uri: ingredients[item].image }} style={styles.image} />
-        <View style={styles.overlay}>
-          <Text style={styles.overlayText}>{ingredients[item].name}</Text>
-        </View>
-      </Card>
+      <TouchableOpacity
+        onPress={handlePress}
+        onLongPress={handleLongPress}
+        delayLongPress={200}
+      >
+        <Card style={[styles.card, isSelected && styles.selectedCard]}>
+          <Card.Cover source={{ uri: item.image }} style={styles.image} />
+          <View style={styles.overlay}>
+            <Text style={styles.overlayText}>{item.name}</Text>
+          </View>
+        </Card>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -23,7 +62,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   card: {
-    borderRadius: 10,
+    borderRadius: 20,
     overflow: "hidden",
   },
   image: {
@@ -47,6 +86,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     padding: 10,
+  },
+  selectedCard: {
+    borderColor: "blue",
+    borderWidth: 2,
   },
 });
 

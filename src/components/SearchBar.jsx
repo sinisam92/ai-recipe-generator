@@ -1,14 +1,48 @@
 import { useState } from "react";
 import { Searchbar } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
+import { ingredients } from "../data/ingrediants";
 
-const SearchBar = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+const SearchBar = ({ searchQuery, setSearchQuery, setFilteredData, filteredData }) => {
+  // this flattens the data so it make it easier to search
+  const flattenData = (data) => {
+    let result = [];
+    Object.entries(data).forEach(([categoryKey, category]) => {
+      Object.entries(category).forEach(([subKey, subCategory]) => {
+        if (subKey !== "name" && subKey !== "image" && subCategory.items) {
+          subCategory.items.forEach((item) => {
+            result.push({
+              category: category.name,
+              subcategory: subCategory.name,
+              name: item.name,
+              image: item.image,
+            });
+          });
+        }
+      });
+    });
+    return result;
+  };
 
+  const allItems = flattenData(ingredients);
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    if (query.trim() === "") {
+      setFilteredData([]);
+      return;
+    }
+
+    const filtered = allItems?.filter((item) =>
+      item.name.toLowerCase().includes(query.toLowerCase())
+    );
+
+    setFilteredData(filtered);
+  };
   return (
     <Searchbar
       placeholder="Search for Ingredient"
-      onChangeText={setSearchQuery}
+      onChangeText={handleSearch}
       value={searchQuery}
       theme={{ colors: { text: "#000" } }} // attempt to change text color inside search bar (failed - revisit)
       clearIcon={
@@ -16,11 +50,10 @@ const SearchBar = () => {
       }
       elevation={5}
       style={{
-        flex: 1,
-        borderRadius: 20,
+        borderRadius: 10,
         backgroundColor: "#ffffff",
-        marginHorizontal: 10,
-        marginTop: 10,
+        height: 50,
+        boxShadow: "2px 3px 10px rgba(0, 0, 0, 0.4)",
       }}
       placeholderTextColor={"#000"}
       iconColor="#000"
