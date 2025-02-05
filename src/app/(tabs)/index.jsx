@@ -11,8 +11,6 @@ export default function Index() {
   const [filteredData, setFilteredData] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
 
-  console.log("selectedForDelete", selectedForDelete?.length);
-
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -108,13 +106,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     flexDirection: "row",
     justifyContent: "flex-end",
-    width: "100%",
+    width: "fit-content",
     zIndex: 999,
     position: "absolute",
     bottom: 0,
+    right: 0,
   },
   deleteButton: {
     borderRadius: 20,
+    marginLeft: 10,
     alignSelf: "flex-end",
   },
 });

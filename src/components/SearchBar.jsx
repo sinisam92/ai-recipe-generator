@@ -12,10 +12,12 @@ const SearchBar = ({ searchQuery, setSearchQuery, setFilteredData, filteredData 
         if (subKey !== "name" && subKey !== "image" && subCategory.items) {
           subCategory.items.forEach((item) => {
             result.push({
+              id: item.id,
               category: category.name,
               subcategory: subCategory.name,
               name: item.name,
               image: item.image,
+              slug: item.slug,
             });
           });
         }

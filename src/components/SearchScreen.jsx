@@ -25,6 +25,7 @@ export default function SearchScreen({
               ingredients={ingredients}
               setSelectedItems={setSelectedItems}
               disableLongPress={true}
+              selectedItems={selectedItems}
             />
           )}
         />
@@ -41,7 +42,7 @@ export default function SearchScreen({
               disableOnPress={true}
               setSelectedForDelete={setSelectedForDelete}
               selectedForDelete={selectedForDelete}
-              //   setSelectedItems={setSelectedItems}
+              selectedItems={null}
             />
           )}
         />
