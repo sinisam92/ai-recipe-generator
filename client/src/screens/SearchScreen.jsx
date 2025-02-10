@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, FlatList, StyleSheet, ImageBackground } from "react-native";
 import { ingredients } from "../data/ingrediants";
-import ItemCard from "./ItemCard";
+import ItemCard from "../components/ItemCard";
 
 export default function SearchScreen({
   searchQuery,

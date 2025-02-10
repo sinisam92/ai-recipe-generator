@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "132165671666",
+    "project_id": "recepie-generator-app",
+    "storage_bucket": "recepie-generator-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:132165671666:android:159336af9fecc1c1420e6b",
+        "android_client_info": {
+          "package_name": "com.sinisa.recepieapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgx2qxaYFx_flx316yZ4NAgF-cVZzh1Vo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

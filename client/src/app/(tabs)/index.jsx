@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import SearchBar from "../../components/SearchBar";
-import SearchScreen from "../../components/SearchScreen";
+import SearchScreen from "../../screens/SearchScreen";
 import { Button } from "react-native-paper";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export default function Index() {
   const [selectedForDelete, setSelectedForDelete] = useState([]);
@@ -11,11 +12,23 @@ export default function Index() {
   const [filteredData, setFilteredData] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
 
+  const { user, logout } = useAuth();
+
   const navigation = useNavigation();
 
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("http://192.168.178.46:3000/logout");
+      await logout();
+      navigation.replace("Auth");
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
 
   const handleDelete = () => {
     setSelectedItems([]);
@@ -31,6 +44,10 @@ export default function Index() {
   return (
     <View style={styles.mainContainer}>
       <View style={styles.contentContainer}>
+        <Text style={styles.title}>Welcome to the Main Screen</Text>
+        <Button mode="contained" onPress={logout} style={styles.button}>
+          Logout
+        </Button>
         <SearchScreen
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -116,5 +133,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginLeft: 10,
     alignSelf: "flex-end",
+  },
+  button: {
+    margin: 10,
   },
 });
