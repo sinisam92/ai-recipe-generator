@@ -1,82 +1,155 @@
-import { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useReducer, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { authReducer } from "../src/reducers/authReducer";
 
 const AuthContext = createContext();
 
+const initialState = {
+  isAuthenticated: false,
+  isAuthenticating: false,
+  user: null,
+  token: null,
+  error: null,
+};
+
 export const AuthProvider = ({ children }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [userToken, setUserToken] = useState(null);
-
+  const [state, dispatch] = useReducer(authReducer, initialState);
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_API_URL;
+  console.log("BASE_URL:", BASE_URL);
 
-  const login = async (email, password) => {
+  const authenticateUser = async (method, credentials) => {
+    dispatch({ type: "AUTH_START" });
+
     try {
-      const response = await axios.post(`${BASE_URL}/auth/login`, {
-        email,
-        password,
+      const endpoint = method === "google" ? "/auth/google" : "/auth/login";
+      const response = await axios.post(`${BASE_URL}${endpoint}`, credentials);
+
+      await AsyncStorage.multiSet([
+        ["authToken", response.data.token],
+        ["user", JSON.stringify(response.data.user)],
+      ]);
+
+      dispatch({ type: "AUTH_SUCCESS", payload: response.data });
+    } catch (error) {
+      const errorDetails = {
+        message: error.message,
+        code: error.code,
+        response: {
+          status: error.response?.status,
+          data: error.response?.data,
+          headers: error.response?.headers,
+        },
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+        },
+      };
+
+      console.error("Full Authentication Error:", errorDetails);
+
+      dispatch({
+        type: "AUTH_FAILURE",
+        payload: error.response?.data?.message || error.message || "Unknown error",
       });
 
-      const token = response.data.token;
-      setUserToken(token);
-      AsyncStorage.setItem("userToken", token);
-    } catch (error) {
-      console.error("Login error:", error.response?.data?.message || error.message);
       throw error;
     }
   };
 
-  const register = async (email, password) => {
-    try {
-      const response = await axios.post(`${BASE_URL}/auth/register`, {
-        email,
-        password,
-      });
+  const emailLogin = (email, password) => authenticateUser("email", { email, password });
+  const googleLogin = (accessToken) =>
+    authenticateUser("google", { access_token: accessToken });
 
-      const token = response.data.token;
-      setUserToken(token);
-      AsyncStorage.setItem("userToken", token);
+  const checkAuthState = async () => {
+    try {
+      const [token, user] = await AsyncStorage.multiGet(["authToken", "user"]);
+      if (token[1] && user[1]) {
+        dispatch({
+          type: "AUTH_SUCCESS",
+          payload: {
+            token: token[1],
+            user: JSON.parse(user[1]),
+          },
+        });
+      }
     } catch (error) {
-      console.error(
-        "Registration error:",
-        error.response?.data?.message || error.message
-      );
-      throw error;
-    }
-  };
-
-  const logout = () => {
-    setUserToken(null);
-    AsyncStorage.removeItem("userToken");
-  };
-
-  const isLoggedIn = async () => {
-    try {
-      setIsLoading(true);
-      const userToken = await AsyncStorage.getItem("userToken");
-      setUserToken(userToken);
-    } catch (e) {
-      console.log(`isLogged in error ${e}`);
-    } finally {
-      setIsLoading(false);
+      dispatch({ type: "AUTH_FAILURE", payload: error.message });
     }
   };
 
   useEffect(() => {
-    isLoggedIn();
-  }, [userToken]);
+    checkAuthState();
+  }, []);
+
+  const register = async (email, password) => {
+    console.log("Attempting registration with:", { email, password });
+    try {
+      dispatch({ type: "AUTH_START" });
+
+      const response = await axios.post(`${BASE_URL}/auth/register`, {
+        email,
+        password,
+      });
+      console.log("Registration response---:", response);
+
+      if (!response.data.user) {
+        throw new Error("User data missing in registration response");
+      }
+
+      console.log("Registration response:", response.data);
+      await AsyncStorage.multiSet([
+        ["authToken", response.data.token],
+        ["user", JSON.stringify(response.data.user)],
+      ]);
+
+      dispatch({ type: "AUTH_SUCCESS", payload: response.data });
+    } catch (error) {
+      console.error("Registration error:", {
+        error: error.response?.data || error.message,
+        config: error.config,
+      });
+      dispatch({
+        type: "AUTH_FAILURE",
+        payload: error.response?.data?.message || "Registration failed",
+      });
+      throw error;
+    }
+  };
+
+  const login = async (email, password) => {
+    return authenticateUser("email", { email, password });
+  };
 
   return (
-    <AuthContext.Provider value={{ login, logout, register, isLoading, userToken }}>
+    <AuthContext.Provider
+      value={{
+        register,
+        login,
+        isLoading: state.isAuthenticating,
+        isAuthenticated: state.isAuthenticated,
+        userToken: state.token,
+        user: state.user,
+        error: state.error,
+        emailLogin,
+        googleLogin,
+        logout: () => {
+          AsyncStorage.multiRemove(["authToken", "user"]);
+          dispatch({ type: "LOGOUT" });
+        },
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
+  const context = React.useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
+
+export default AuthContext;

@@ -83,7 +83,7 @@ const CombinedDarkTheme = merge(DarkTheme, customDarkTheme);
 
 function RootLayoutNav() {
   const { colorScheme } = useTheme();
-  const { isLoading, userToken } = useAuth();
+  const { isLoading, userToken, user } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 

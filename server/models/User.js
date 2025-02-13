@@ -1,37 +1,48 @@
 import { Schema, model } from "mongoose";
 import bcrypt from "bcryptjs";
 
-const { genSalt, hash, compare } = bcrypt;
-
-const UserSchema = new Schema(
-  {
-    email: {
-      type: String,
-      required: [true, "Please provide an email"],
-      unique: true,
-      lowercase: true,
-      trim: true,
-      match: [/^\S+@\S+\.\S+$/, "Please provide a valid email"],
-    },
-    password: {
-      type: String,
-      required: [true, "Please provide a password"],
-      minlength: [6, "Password should be at least 6 characters long"],
-    },
+const userSchema = new Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
   },
-  { timestamps: true }
-);
-
-UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    return next();
-  }
-  const salt = await genSalt(10);
-  this.password = await hash(this.password, salt);
+  password: {
+    type: String,
+    // required: true,
+    select: false,
+  },
+  name: {
+    type: String,
+  },
+  picture: String,
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-UserSchema.methods.matchPassword = async function (enteredPassword) {
-  return await compare(enteredPassword, this.password);
+userSchema.pre("save", function (next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  if (!this.password) {
+    throw new Error("User password not set");
+  }
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
-export default model("User", UserSchema);
+const User = model("User", userSchema);
+
+export default User;
