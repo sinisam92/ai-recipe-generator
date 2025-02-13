@@ -20,15 +20,15 @@ export default function Index() {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
-  const handleLogout = async () => {
-    try {
-      await fetch("http://192.168.178.46:3000/logout");
-      await logout();
-      navigation.replace("Auth");
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
-  };
+  // const handleLogout = async () => {
+  //   try {
+  //     await fetch("http://192.168.178.46:3000/logout");
+  //     await logout();
+  //     navigation.replace("Auth");
+  //   } catch (error) {
+  //     console.error("Logout failed", error);
+  //   }
+  // };
 
   const handleDelete = () => {
     setSelectedItems([]);
