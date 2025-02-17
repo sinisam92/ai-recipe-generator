@@ -16,14 +16,18 @@ const initialState = {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_API_URL;
-  console.log("BASE_URL:", BASE_URL);
 
   const authenticateUser = async (method, credentials) => {
+    console.log("Authenticating user with:", { method, credentials });
+
     dispatch({ type: "AUTH_START" });
 
     try {
       const endpoint = method === "google" ? "/auth/google" : "/auth/login";
+      console.log("Endpoint:", endpoint);
+
       const response = await axios.post(`${BASE_URL}${endpoint}`, credentials);
+      console.log("========Authentication response:-------", response);
 
       await AsyncStorage.multiSet([
         ["authToken", response.data.token],
@@ -32,6 +36,8 @@ export const AuthProvider = ({ children }) => {
 
       dispatch({ type: "AUTH_SUCCESS", payload: response.data });
     } catch (error) {
+      console.log("Authentication error:-------------");
+
       const errorDetails = {
         message: error.message,
         code: error.code,
@@ -57,7 +63,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const emailLogin = (email, password) => authenticateUser("email", { email, password });
+  // const emailLogin = (email, password) => authenticateUser("email", { email, password });
   const googleLogin = (accessToken) =>
     authenticateUser("google", { access_token: accessToken });
 
@@ -131,7 +137,7 @@ export const AuthProvider = ({ children }) => {
         userToken: state.token,
         user: state.user,
         error: state.error,
-        emailLogin,
+        // emailLogin,
         googleLogin,
         logout: () => {
           AsyncStorage.multiRemove(["authToken", "user"]);

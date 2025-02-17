@@ -4,6 +4,7 @@ import { TextInput, Button, Divider } from "react-native-paper";
 import { Link } from "expo-router";
 import { useAuth } from "../../../contexts/AuthContext";
 import GoogleLoginButton from "../../components/GoogleAuthButton";
+import DividerWithText from "../../components/DeviderWithText";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -49,7 +50,7 @@ export default function LoginScreen() {
       >
         <Text>Login</Text>
       </Button>
-      <Divider style={styles.divider} />
+      <DividerWithText text="or" />
       <GoogleLoginButton />
       <Link href="/register" asChild>
         <Button mode="text" style={styles.link}>
@@ -72,9 +73,6 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 16,
-  },
-  divider: {
-    marginVertical: 20,
   },
   link: {
     marginTop: 20,
