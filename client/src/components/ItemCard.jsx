@@ -1,7 +1,8 @@
 import React from "react";
 import { Card } from "react-native-paper";
-import { Text, StyleSheet, View, TouchableOpacity } from "react-native";
+import { Text, StyleSheet, View, Pressable } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
+import { useTheme } from "../hooks/useTheme";
 
 const ItemCard = ({
   item,
@@ -12,6 +13,7 @@ const ItemCard = ({
   disableLongPress,
   selectedItems,
 }) => {
+  const { colorScheme } = useTheme();
   const handlePress = () => {
     if (!disableOnPress) {
       setSelectedItems((prev) => {
@@ -41,14 +43,18 @@ const ItemCard = ({
     Array.isArray(selectedItems) &&
     selectedItems.some((selected) => selected.name === item.name);
 
-  console.log("isItemSelectedInSearchScreen", isItemSelectedInSearchScreen);
-
   return (
-    <View style={styles.cardWrapper}>
-      <TouchableOpacity
+    <View
+      style={[
+        styles.cardWrapper,
+        { backgroundColor: colorScheme === "dark" ? "#000" : "#fff" },
+      ]}
+    >
+      <Pressable
         onPress={handlePress}
         onLongPress={handleLongPress}
         delayLongPress={200}
+        delayPressIn={0}
         style={styles.cardWrapperTouchable}
       >
         <Card
@@ -74,12 +80,12 @@ const ItemCard = ({
             <AntDesign
               name="checksquareo"
               size={24}
-              color="blue"
+              color="red"
               style={styles.checkedIcon}
             />
           )}
         </Card>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 };
@@ -88,16 +94,14 @@ const styles = StyleSheet.create({
   cardWrapper: {
     flex: 1,
     margin: 10,
-    borderRadius: 10,
-    overflow: "hidden",
+    borderRadius: 30,
   },
   cardWrapperTouchable: {
     flex: 1,
     position: "relative",
   },
   card: {
-    borderRadius: 20,
-    overflow: "hidden",
+    borderRadius: 14,
   },
   image: {
     height: 150,
@@ -107,6 +111,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.1)",
     justifyContent: "center",
     alignItems: "center",
+    borderRadius: 10,
   },
   overlayText: {
     width: "100%",
@@ -122,7 +127,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   selectedCard: {
-    borderColor: "blue",
+    borderColor: "red",
     borderWidth: 2,
   },
   selectedInSearch: {

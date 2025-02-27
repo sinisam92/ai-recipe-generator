@@ -1,28 +1,39 @@
+export const initialState = {
+  isAuthenticated: false,
+  isLoading: false,
+  user: null,
+  accessToken: null,
+  refreshToken: null,
+  error: null,
+};
+
 export const authReducer = (state, action) => {
-  console.log("Auth Action:", action.type, "Payload:", action.payload);
   switch (action.type) {
     case "AUTH_START":
-      return { ...state, isAuthenticating: true, error: null };
+      return { ...state, isLoading: true, error: null };
     case "AUTH_SUCCESS":
-      console.log("Auth AUTH_SUCCESS:", action.payload);
-
       return {
         ...state,
+        isLoading: false,
         isAuthenticated: true,
-        isAuthenticating: false,
+        accessToken: action.payload.accessToken,
+        refreshToken: action.payload.refreshToken,
         user: action.payload.user,
-        token: action.payload.token,
         error: null,
       };
+    case "AUTH_REFRESH_START":
+      return { ...state, isLoading: true };
+    case "AUTH_REFRESH_SUCCESS":
+      return {
+        ...state,
+        isLoading: false,
+        accessToken: action.payload.accessToken,
+        refreshToken: action.payload.refreshToken,
+      };
     case "AUTH_FAILURE":
-      console.error("Auth Failure Details:", {
-        error: action.payload,
-        previousState: state,
-        timestamp: new Date().toISOString(),
-      });
-      return { ...state, isAuthenticating: false, error: action.payload };
+      return { ...state, isLoading: false, error: action.payload };
     case "LOGOUT":
-      return { ...state, isAuthenticated: false, user: null, token: null };
+      return { ...initialState };
     default:
       return state;
   }

@@ -1,20 +1,40 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text, Pressable } from "react-native";
 import { Avatar } from "react-native-paper";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
+import { useThemeContext } from "../contexts/ThemeContext";
 
-const AvatarComponent = () => {
+const AvatarComponent = ({ handleOnPress }) => {
   const { user } = useAuth();
+  const { paperTheme } = useThemeContext();
   console.log("user in avatar", user);
   const emailFirstChar = user?.email.charAt(0).toUpperCase();
+  const onPressFunction = () => {
+    console.log("onPressFunction");
+    handleOnPress();
+  };
   return (
-    <View style={styles.container}>
+    <View style={[styles.container]}>
+      <Text style={[styles.name, { color: paperTheme.colors.inversePrimary }]}>
+        {user?.name ? user?.name : user?.email}
+      </Text>
       <View style={styles.avatarContainer}>
-        {user?.picture ? (
-          <Avatar.Image size={44} source={{ uri: user.picture }} />
-        ) : (
-          <Avatar.Text size={44} label={emailFirstChar} />
-        )}
+        <Pressable onPress={onPressFunction}>
+          {user?.picture ? (
+            <Avatar.Image
+              size={44}
+              source={{ uri: user.picture }}
+              backgroundColor={paperTheme.colors.inversePrimary}
+            />
+          ) : (
+            <Avatar.Text
+              size={44}
+              label={emailFirstChar}
+              color={paperTheme.colors.primary}
+              style={{ backgroundColor: paperTheme.colors.inversePrimary }}
+            />
+          )}
+        </Pressable>
       </View>
     </View>
   );
@@ -22,17 +42,20 @@ const AvatarComponent = () => {
 
 const styles = StyleSheet.create({
   container: {
-    position: "relative",
-    marginTop: 70,
-    marginBottom: 20,
+    flex: 1,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
     width: "100%",
-    // right: 0,
   },
   avatarContainer: {
-    position: "absolute",
-    right: 30,
-    top: 0,
-    zIndex: 999,
+    zIndex: 1400,
+  },
+  name: {
+    fontSize: 12,
+    fontWeight: "thin",
+    marginRight: 10,
   },
 });
 

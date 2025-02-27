@@ -1,5 +1,14 @@
 import { Stack } from "expo-router";
+import { useThemeContext } from "../../contexts/ThemeContext";
 
 export default function AuthLayout() {
-  return <Stack screenOptions={{ headerTitle: "" }} />;
+  const { paperTheme } = useThemeContext();
+  return (
+    <Stack
+      screenOptions={{
+        headerTitle: "",
+        headerStyle: { backgroundColor: paperTheme.colors.background },
+      }}
+    />
+  );
 }

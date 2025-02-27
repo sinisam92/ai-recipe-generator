@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { View, StyleSheet, Alert } from "react-native";
-import { TextInput, Button, Divider, ActivityIndicator } from "react-native-paper";
+import { View, StyleSheet, Text } from "react-native";
+import { TextInput, Button } from "react-native-paper";
 import { Link, router } from "expo-router";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import GoogleLoginButton from "../../components/GoogleAuthButton";
+import { useThemeContext } from "../../contexts/ThemeContext";
+import DividerWithText from "../../components/DeviderWithText";
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState("");
@@ -12,14 +14,11 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const { register, isLoading, error } = useAuth();
-
-  console.log("RegisterScreen Error:", error);
-  console.log("RegisterScreen password:", password);
-  console.log("RegisterScreen email:", email);
+  const { paperTheme } = useThemeContext();
 
   useEffect(() => {
     if (error) {
-      Alert.alert("Registration Error", error);
+      setErrors((prev) => ({ ...prev, server: error }));
     }
   }, [error]);
 
@@ -45,12 +44,13 @@ export default function RegisterScreen() {
 
     try {
       await register(email, password);
-      router.replace("/home");
-    } catch (error) {}
+      router.replace("/(tabs)");
+    } catch (err) {}
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: paperTheme.colors.background }]}>
+      {errors.server && <Text style={styles.error}>{errors.server}</Text>}
       <TextInput
         label="Email"
         value={email}
@@ -60,6 +60,10 @@ export default function RegisterScreen() {
         mode="outlined"
         autoCapitalize="none"
         keyboardType="email-address"
+        disabled={isLoading}
+        theme={{ colors: { primary: paperTheme.colors.inversePrimary } }}
+        underlineColor={paperTheme.colors.inversePrimary}
+        activeUnderlineColor={paperTheme.colors.inversePrimary}
       />
       {errors.email && <Text style={styles.error}>{errors.email}</Text>}
 
@@ -71,12 +75,15 @@ export default function RegisterScreen() {
         error={!!errors.password}
         style={styles.input}
         mode="outlined"
+        disabled={isLoading}
         right={
           <TextInput.Icon
             icon={showPassword ? "eye-off" : "eye"}
             onPress={() => setShowPassword(!showPassword)}
+            disabled={isLoading}
           />
         }
+        theme={{ colors: { primary: paperTheme.colors.inversePrimary } }}
       />
       {errors.password && <Text style={styles.error}>{errors.password}</Text>}
 
@@ -88,30 +95,39 @@ export default function RegisterScreen() {
         error={!!errors.confirmPassword}
         style={styles.input}
         mode="outlined"
+        disabled={isLoading}
+        theme={{ colors: { primary: paperTheme.colors.inversePrimary } }}
       />
       {errors.confirmPassword && (
         <Text style={styles.error}>{errors.confirmPassword}</Text>
       )}
 
-      {isLoading ? (
-        <ActivityIndicator animating={true} style={styles.loading} />
-      ) : (
-        <Button
-          mode="contained"
-          onPress={handleRegister}
-          style={styles.button}
-          disabled={isLoading}
-        >
-          Register
-        </Button>
-      )}
+      <Button
+        mode="contained"
+        onPress={handleRegister}
+        style={[
+          styles.button,
+          {
+            backgroundColor: paperTheme.colors.success,
+          },
+        ]}
+        loading={isLoading}
+        disabled={isLoading}
+        textColor="#fff"
+      >
+        Register
+      </Button>
 
-      <Divider style={styles.divider} />
-
+      <DividerWithText text="or" />
       <GoogleLoginButton />
 
       <Link href="/login" asChild>
-        <Button mode="text" style={styles.link}>
+        <Button
+          mode="text"
+          style={styles.link}
+          disabled={isLoading}
+          textColor={paperTheme.colors.inversePrimary}
+        >
           Already have an account? Login
         </Button>
       </Link>
@@ -130,9 +146,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 16,
-  },
-  divider: {
-    marginVertical: 20,
+    borderWidth: 1,
   },
   link: {
     marginTop: 20,
@@ -141,77 +155,4 @@ const styles = StyleSheet.create({
     color: "red",
     marginBottom: 8,
   },
-  loading: {
-    marginVertical: 16,
-  },
 });
-// import { useState } from "react";
-// import { View, StyleSheet } from "react-native";
-// import { TextInput, Button, Divider } from "react-native-paper";
-// import { Link } from "expo-router";
-// import { useAuth } from "../../../contexts/AuthContext";
-// import GoogleLoginButton from "../../components/GoogleAuthButton";
-
-// export default function RegisterScreen() {
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const { register } = useAuth();
-
-//   const handleRegister = async () => {
-//     try {
-//       await register(email, password);
-//     } catch (error) {
-//       console.error(error);
-//     }
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <TextInput
-//         label="Email"
-//         value={email}
-//         onChangeText={setEmail}
-//         style={styles.input}
-//         mode="outlined"
-//       />
-//       <TextInput
-//         label="Password"
-//         value={password}
-//         onChangeText={setPassword}
-//         secureTextEntry
-//         style={styles.input}
-//         mode="outlined"
-//       />
-//       <Button mode="contained" onPress={handleRegister} style={styles.button}>
-//         Register
-//       </Button>
-//       <Divider style={styles.divider} />
-//       <GoogleLoginButton />
-//       <Link href="/login" asChild>
-//         <Button mode="text" style={styles.link}>
-//           Already have an account? Login
-//         </Button>
-//       </Link>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     justifyContent: "center",
-//     padding: 20,
-//   },
-//   input: {
-//     marginBottom: 12,
-//   },
-//   button: {
-//     marginTop: 16,
-//   },
-//   divider: {
-//     marginVertical: 20,
-//   },
-//   link: {
-//     marginTop: 20,
-//   },
-// });

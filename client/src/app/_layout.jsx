@@ -1,139 +1,125 @@
-// import { Stack } from "expo-router";
-// import { StatusBar } from "expo-status-bar";
-// import {
-//   MD3DarkTheme,
-//   MD3LightTheme,
-//   PaperProvider,
-//   adaptNavigationTheme,
-// } from "react-native-paper";
-// import {
-//   DarkTheme as NavigationDarkTheme,
-//   DefaultTheme as NavigationDefaultTheme,
-//   ThemeProvider,
-// } from "@react-navigation/native";
-// import merge from "deepmerge";
-// import { Colors } from "../constants/Colors";
-// import { useTheme } from "../hooks/useTheme";
-// import { AuthProvider } from "../../contexts/AuthContext";
-
-// const customDarkTheme = { ...MD3DarkTheme, colors: Colors.dark };
-// const customLightTheme = { ...MD3LightTheme, colors: Colors.light };
-
-// const { LightTheme, DarkTheme } = adaptNavigationTheme({
-//   reactNavigationLight: NavigationDefaultTheme,
-//   reactNavigationDark: NavigationDarkTheme,
-// });
-
-// const CombinedLightTheme = merge(LightTheme, customLightTheme);
-// const CombinedDarkTheme = merge(DarkTheme, customDarkTheme);
-
-// export default function RootLayout() {
-//   const { colorScheme } = useTheme();
-
-//   const paperTheme = colorScheme === "dark" ? CombinedDarkTheme : CombinedLightTheme;
-
-//   return (
-//     <AuthProvider>
-//       <PaperProvider theme={paperTheme}>
-//         <ThemeProvider value={paperTheme}>
-//           <Stack>
-//             <Stack.Screen
-//               name="(tabs)"
-//               options={{
-//                 headerShown: false,
-//               }}
-//             />
-//             <Stack.Screen name="NotFound" />
-//           </Stack>
-//         </ThemeProvider>
-//         <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-//       </PaperProvider>
-//     </AuthProvider>
-//   );
-// }
-import { useEffect } from "react";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { useEffect, useState } from "react";
+import { Stack, useRouter, useSegments, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useAuth, AuthProvider } from "../contexts/AuthContext";
+import { RecipeProvider } from "../contexts/RecipeContext";
+import { useThemeContext, ThemeProviderCustom } from "../contexts/ThemeContext";
+import RecipeResult from "./RecipeResult";
+import MainNavigation from "../components/MainNavigation";
 import {
-  MD3DarkTheme,
-  MD3LightTheme,
-  PaperProvider,
-  adaptNavigationTheme,
-} from "react-native-paper";
-import {
-  DarkTheme as NavigationDarkTheme,
-  DefaultTheme as NavigationDefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
-import merge from "deepmerge";
-import { Colors } from "../constants/Colors";
-import { useTheme } from "../hooks/useTheme";
-import { AuthProvider, useAuth } from "../../contexts/AuthContext";
-
-const customDarkTheme = { ...MD3DarkTheme, colors: Colors.dark };
-const customLightTheme = { ...MD3LightTheme, colors: Colors.light };
-
-const { LightTheme, DarkTheme } = adaptNavigationTheme({
-  reactNavigationLight: NavigationDefaultTheme,
-  reactNavigationDark: NavigationDarkTheme,
-});
-
-const CombinedLightTheme = merge(LightTheme, customLightTheme);
-const CombinedDarkTheme = merge(DarkTheme, customDarkTheme);
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  runOnJS,
+} from "react-native-reanimated";
+import DrawerComponent from "../components/DrawerComponent";
+import { View } from "react-native";
+import ProfileScreen from "./ProfileScreen";
 
 function RootLayoutNav() {
-  const { colorScheme } = useTheme();
-  const { isLoading, userToken, user } = useAuth();
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [isDrawerMounted, setIsDrawerMounted] = useState(false);
+  const [active, setActive] = useState("home");
+
+  const { paperTheme } = useThemeContext();
+  const { isLoading, accessToken } = useAuth(); // Updated to use accessToken
   const segments = useSegments();
   const router = useRouter();
+  const pathname = usePathname();
+
+  const isIndex = pathname === "/";
+  const isAuth = pathname === "/login" || pathname === "/register";
 
   useEffect(() => {
     if (!isLoading) {
       const inAuthGroup = segments[0] === "(auth)";
-      if (!userToken && !inAuthGroup) {
+      if (!accessToken && !inAuthGroup) {
         router.replace("/login");
-      } else if (userToken && inAuthGroup) {
+      } else if (accessToken && inAuthGroup) {
         router.replace("/(tabs)");
       }
     }
-  }, [isLoading, userToken, segments, router]);
+  }, [isLoading, accessToken, segments, router]);
 
-  const paperTheme = colorScheme === "dark" ? CombinedDarkTheme : CombinedLightTheme;
+  const handleOnPress = () => setDrawerVisible(true);
+
+  const drawerWidth = 410;
+  const translateX = useSharedValue(-drawerWidth);
+
+  useEffect(() => {
+    if (drawerVisible) {
+      setIsDrawerMounted(true);
+      translateX.value = withTiming(0, { duration: 300 });
+    } else {
+      translateX.value = withTiming(-drawerWidth, { duration: 300 }, () => {
+        runOnJS(setIsDrawerMounted)(false);
+      });
+    }
+  }, [drawerVisible, translateX]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
 
   return (
-    <PaperProvider theme={paperTheme}>
-      <ThemeProvider value={paperTheme}>
-        <Stack>
-          {!userToken ? (
-            // Auth screens
+    <View style={{ flex: 1, backgroundColor: paperTheme.colors.background }}>
+      <StatusBar
+        animated={true}
+        style={paperTheme.dark ? "light" : "dark"}
+        backgroundColor={paperTheme.colors.background}
+      />
+      {!isAuth && <MainNavigation handleOnPress={handleOnPress} isIndexPath={isIndex} />}
+
+      {isDrawerMounted && (
+        <DrawerComponent
+          setIsDrawerMounted={setIsDrawerMounted}
+          drawerVisible={drawerVisible}
+          setDrawerVisible={setDrawerVisible}
+          animatedStyle={animatedStyle}
+          active={active}
+          setActive={setActive}
+        />
+      )}
+
+      <Stack screenOptions={{ headerShown: false }}>
+        {!accessToken ? (
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        ) : (
+          <>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen
-              name="(auth)"
+              name="RecipeResult"
+              component={RecipeResult}
               options={{
-                headerShown: false,
-                headerTitleStyle: { display: "none" },
+                title: "Your Recipe",
+                contentStyle: {
+                  flex: 1,
+                },
               }}
             />
-          ) : (
-            // App screens
             <Stack.Screen
-              name="(tabs)"
+              name="ProfileScreen"
+              component={ProfileScreen}
               options={{
-                headerShown: false,
+                title: "Profile",
               }}
             />
-          )}
-          <Stack.Screen name="NotFound" />
-        </Stack>
-      </ThemeProvider>
-      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-    </PaperProvider>
+          </>
+        )}
+        <Stack.Screen name="NotFound" />
+      </Stack>
+    </View>
   );
 }
 
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <RootLayoutNav />
+      <RecipeProvider>
+        <ThemeProviderCustom>
+          <RootLayoutNav />
+        </ThemeProviderCustom>
+      </RecipeProvider>
     </AuthProvider>
   );
 }

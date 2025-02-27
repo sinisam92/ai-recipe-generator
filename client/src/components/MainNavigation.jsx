@@ -1,25 +1,27 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { Ionicons, Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import AvatarComponent from "./AvatarComponent";
 
-const MainNavigation = ({ colorScheme }) => {
+import { useThemeContext } from "../contexts/ThemeContext";
+
+const MainNavigation = ({ isIndexPath, handleOnPress }) => {
+  const { paperTheme } = useThemeContext();
+
   return (
-    <View style={styles.navigation}>
-      <Ionicons
-        name="arrow-back"
-        size={24}
-        color={colorScheme === "dark" ? "#ffffff" : "#000000"}
-        style={styles.icon}
-        onPress={() => router.back()}
-      />
-      <Feather
-        name="menu"
-        size={24}
-        color={colorScheme === "dark" ? "#ffffff" : "#000000"}
-        style={styles.icon}
-        onPress={() => console.log("Hamburger Pressed")}
-      />
+    <View style={[styles.navigation, { backgroundColor: paperTheme.colors.background }]}>
+      {isIndexPath ? null : (
+        <Ionicons
+          name="arrow-back"
+          size={24}
+          color={paperTheme.colors.inversePrimary}
+          style={styles.icon}
+          onPress={() => router.back()}
+        />
+      )}
+
+      <AvatarComponent handleOnPress={handleOnPress} />
     </View>
   );
 };
@@ -28,8 +30,12 @@ const styles = StyleSheet.create({
   navigation: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 5,
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
     width: "100%",
+    marginTop: 50,
+    height: 80,
+    zIndex: 1200,
   },
   icon: {
     marginHorizontal: 5,

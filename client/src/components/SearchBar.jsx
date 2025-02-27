@@ -1,9 +1,10 @@
-import { useState } from "react";
 import { Searchbar } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { ingredients } from "../data/ingrediants";
+import { useThemeContext } from "../contexts/ThemeContext";
 
 const SearchBar = ({ searchQuery, setSearchQuery, setFilteredData, filteredData }) => {
+  const { paperTheme } = useThemeContext();
   // this flattens the data so it make it easier to search
   const flattenData = (data) => {
     let result = [];
@@ -36,7 +37,7 @@ const SearchBar = ({ searchQuery, setSearchQuery, setFilteredData, filteredData 
     }
 
     const filtered = allItems?.filter((item) =>
-      item.name.toLowerCase().includes(query.toLowerCase())
+      item.name.toLowerCase().startsWith(query.toLowerCase())
     );
 
     setFilteredData(filtered);
@@ -46,14 +47,20 @@ const SearchBar = ({ searchQuery, setSearchQuery, setFilteredData, filteredData 
       placeholder="Search for Ingredient"
       onChangeText={handleSearch}
       value={searchQuery}
-      theme={{ colors: { text: "#000" } }} // attempt to change text color inside search bar (failed - revisit)
+      theme={{
+        colors: {
+          text: "#000",
+          primary: "#000",
+          onSurfaceVariant: "#000",
+        },
+      }}
       clearIcon={
         searchQuery ? () => <MaterialIcons name="clear" size={24} color="black" /> : null
       }
       elevation={5}
       style={{
         borderRadius: 10,
-        backgroundColor: "#ffffff",
+        backgroundColor: paperTheme.colors.secondary,
         height: 50,
         boxShadow: "2px 3px 10px rgba(0, 0, 0, 0.4)",
       }}

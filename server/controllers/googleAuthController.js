@@ -1,36 +1,40 @@
 import User from "../models/User.js";
+import generateTokens from "../utils/generateTokens.js";
 
 export const googleAuth = async (req, res) => {
-  console.log("Google Auth Request:", req.body);
-
   try {
     const { access_token } = req.body;
+    console.log("Google Auth Request:", req.body);
 
     const googleResponse = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
       headers: { Authorization: `Bearer ${access_token}` },
     });
-    console.log("Google Response:", googleResponse);
 
     if (!googleResponse.ok) {
-      return res.status(401).json({ error: "Invalid Google token" });
+      return res.status(401).json({ message: "Invalid Google token" });
     }
 
     const googleUser = await googleResponse.json();
-    console.log("Google User:", googleUser);
-
-    const user = await findOrCreateUser({
-      id: googleUser.sub,
-      email: googleUser.email,
-      name: googleUser.name,
-      picture: googleUser.picture,
+    let user = await User.findOne({
+      $or: [{ email: googleUser.email }, { googleId: googleUser.sub }],
     });
 
-    console.log("User:", user);
+    if (!user) {
+      user = await User.create({
+        email: googleUser.email,
+        name: googleUser.name,
+        picture: googleUser.picture,
+        googleId: googleUser.sub,
+      });
+    } else if (!user.googleId) {
+      user.googleId = googleUser.sub;
+      await user.save();
+    }
 
-    const token = generateJWT(user);
-
+    const { accessToken, refreshToken } = generateTokens(user);
     res.json({
-      token,
+      accessToken,
+      refreshToken,
       user: {
         id: user._id,
         email: user.email,
@@ -39,36 +43,8 @@ export const googleAuth = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Google Auth Error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.log("Google Auth Error:", error);
+
+    res.status(500).json({ message: "Google auth failed", error: error.message });
   }
 };
-
-async function findOrCreateUser(googleUser) {
-  const existingUser = await User.findOne({
-    $or: [{ email: googleUser.email }, { googleId: googleUser.id }],
-  });
-
-  if (existingUser) {
-    if (!existingUser.googleId) {
-      existingUser.googleId = googleUser.id;
-      await existingUser.save();
-    }
-    return existingUser;
-  }
-
-  return User.create({
-    email: googleUser.email,
-    name: googleUser.name,
-    picture: googleUser.picture,
-    googleId: googleUser.id,
-  });
-}
-
-//  generate a JWT token
-import jwt from "jsonwebtoken";
-function generateJWT(user) {
-  return jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
-}

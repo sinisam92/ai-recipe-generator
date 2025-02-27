@@ -1,12 +1,21 @@
 import { Tabs } from "expo-router";
-import { Feather, FontAwesome } from "@expo/vector-icons";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
+import { useThemeContext } from "../../contexts/ThemeContext";
+import { usePathname } from "expo-router";
 
 export default function TabLayout() {
+  const { paperTheme } = useThemeContext();
+  const pathname = usePathname();
+  const isIndex = pathname === "/";
+
+  const iconSize = 28;
   return (
     <Tabs
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: "white",
+          backgroundColor: isIndex
+            ? paperTheme.colors.onSecondary
+            : paperTheme.colors.background,
           height: 60,
           borderTopWidth: 0,
           elevation: 0,
@@ -16,32 +25,39 @@ export default function TabLayout() {
           borderTopColor: "white",
           borderTopColor: "white",
         },
-        tabBarActiveTintColor: "blue",
+        tabBarActiveTintColor: "rgb(111, 208, 238)",
         tabBarInactiveTintColor: "lightgray",
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
-          tabBarIcon: ({ color }) => <Feather name="home" size={24} color={color} />,
+          title: "",
+          tabBarIcon: ({ color }) => (
+            <Feather name="home" size={iconSize} color={color} />
+          ),
         }}
-        screenOptions={{ tabBarActiveTintColor: "red" }}
+        screenOptions={{ tabBarActiveTintColor: "teal" }}
       />
       <Tabs.Screen
         name="myRecepies"
         options={{
-          title: "My Recepies",
+          header: () => null,
+          title: "",
           tabBarIcon: ({ color }) => (
-            <FontAwesome name="birthday-cake" size={24} color={color} />
+            <MaterialIcons name="menu-book" size={iconSize} color={color} />
           ),
         }}
       />
+
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Setting",
-          tabBarIcon: ({ color }) => <Feather name="settings" size={24} color={color} />,
+          header: () => null,
+          title: "",
+          tabBarIcon: ({ color }) => (
+            <Feather name="settings" size={iconSize} color={color} />
+          ),
         }}
       />
     </Tabs>
