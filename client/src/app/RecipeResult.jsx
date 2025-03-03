@@ -19,13 +19,7 @@ export default function RecipeResult() {
 
   const navigation = useNavigation();
   const { userToken, user } = useAuth();
-  const {
-    selectedItems,
-    setSelectedItems,
-    addSavedRecipe,
-    fetchSavedRecipes,
-    setUserRecipes,
-  } = useRecipeContext();
+  const { selectedItems, setSelectedItems, addSavedRecipe } = useRecipeContext();
   const { recipe } = useRoute().params;
   const { paperTheme } = useThemeContext();
 
@@ -112,19 +106,6 @@ export default function RecipeResult() {
         };
         console.log("Saved Recipe with ID:", savedRecipeWithId);
 
-        // Fetch latest saved recipes first
-        // await fetchSavedRecipes();
-
-        // Ensure previous recipes exist before updating
-        // setUserRecipes((prevRecipes) => {
-        //   const updatedRecipes = Array.isArray(prevRecipes)
-        //     ? [...prevRecipes, savedRecipeWithId]
-        //     : [savedRecipeWithId];
-
-        //   console.log("Updated Recipes to Save:", updatedRecipes);
-        //   return updatedRecipes;
-        // });
-
         addSavedRecipe(savedRecipeWithId);
         showSuccessModal();
       } else {
@@ -178,14 +159,7 @@ export default function RecipeResult() {
 
             <Text style={styles.modalTitle}>Recipe Saved Successfully!</Text>
             <Text style={styles.modalText}>
-              Check "My Recipes" ({" "}
-              <MaterialIcons
-                name="menu-book"
-                size={25}
-                color={paperTheme.colors.inversePrimary}
-                style={styles.successIcon}
-              />
-              ) page to make it again whenever you like.
+              Check "My Recipes" page to make it again whenever you like.
             </Text>
           </View>
         </Modal>

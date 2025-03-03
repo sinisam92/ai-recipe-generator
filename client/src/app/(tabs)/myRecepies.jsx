@@ -15,7 +15,7 @@ export default function MyRecepies() {
   const { userRecipes, setUserRecipes, deleteRecipe, fetchSavedRecipes, savedRecipes } =
     useRecipeContext();
   const { paperTheme } = useThemeContext();
-  const { userToken } = useAuth();
+  const { accessToken } = useAuth();
 
   useEffect(() => {
     console.log("userRecipes effect running");
@@ -25,7 +25,7 @@ export default function MyRecepies() {
         setLoading(true);
         setError(null);
 
-        console.log("Token being used:", userToken);
+        console.log("Token being used:", accessToken);
 
         try {
           const cachedRecipes = await AsyncStorage.getItem("userRecipes");
@@ -38,13 +38,13 @@ export default function MyRecepies() {
           console.log("Error loading cached recipes:", cacheError);
         }
 
-        if (!userToken) {
+        if (!accessToken) {
           throw new Error("No authentication token available");
         }
 
         const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/recipes`, {
           headers: {
-            Authorization: `Bearer ${userToken}`,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
         });
@@ -75,7 +75,7 @@ export default function MyRecepies() {
     };
 
     loadRecipes();
-  }, [userToken]);
+  }, [accessToken]);
 
   const handleDeleteRecipe = async (id) => {
     try {
@@ -108,12 +108,6 @@ export default function MyRecepies() {
         <View
           style={[styles.container, { backgroundColor: paperTheme.colors.background }]}
         >
-          {error && (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          )}
-
           {loading && (
             <ActivityIndicator size="small" color="#007bff" style={styles.miniLoader} />
           )}

@@ -29,38 +29,6 @@ export default function Index() {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadRecipes = async () => {
-      if (!isInitialLoad) return;
-      try {
-        const data = await apiRequest(`${process.env.EXPO_PUBLIC_BASE_API_URL}/recipes`);
-        if (isMounted) {
-          if (data) {
-            setUserRecipes(data);
-          } else {
-            setUserRecipes([]);
-          }
-          setIsInitialLoad(false);
-        }
-      } catch (error) {
-        if (error?.response?.status === 404) {
-          setUserRecipes([]);
-        } else {
-          console.error("Error fetching recipes:", error);
-        }
-        setIsInitialLoad(false);
-      }
-    };
-
-    loadRecipes();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isInitialLoad]);
-
   const handleDelete = () => {
     setSelectedItems([]);
   };

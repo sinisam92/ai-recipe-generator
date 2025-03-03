@@ -10,22 +10,22 @@ export function RecipeProvider({ children }) {
   const [userRecipes, setUserRecipes] = useState([]);
   const [savedRecipes, setSavedRecipes] = useState([]);
 
-  const { userToken } = useAuth();
+  const { accessToken } = useAuth();
 
   useEffect(() => {
-    if (userToken) {
+    if (accessToken) {
       console.log("User token changed, fetching saved recipes");
       fetchSavedRecipes();
     }
-  }, [userToken]);
+  }, [accessToken]);
 
   const fetchSavedRecipes = async () => {
-    if (!userToken) return;
+    if (!accessToken) return;
 
     try {
       const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_API_URL}/recipes`, {
         headers: {
-          Authorization: `Bearer ${userToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 
